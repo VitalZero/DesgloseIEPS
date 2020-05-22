@@ -7,6 +7,7 @@
 #include "DesgloseIEPS.h"
 #include "DesgloseIEPSDlg.h"
 #include "afxdialogex.h"
+#include "Combust.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -65,6 +66,7 @@ BEGIN_MESSAGE_MAP(CDesgloseIEPSDlg, CDialogEx)
 	ON_WM_SYSCOMMAND()
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
+	ON_BN_CLICKED( IDC_DESGLOSAR, &CDesgloseIEPSDlg::OnBnClickedDesglosar )
 END_MESSAGE_MAP()
 
 
@@ -100,7 +102,7 @@ BOOL CDesgloseIEPSDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// Establecer icono pequeño
 
 	// TODO: agregar aquí inicialización adicional
-
+	SetDlgItemText( IDC_STATICRESULT, "" );
 	return TRUE;  // Devuelve TRUE  a menos que establezca el foco en un control
 }
 
@@ -153,3 +155,47 @@ HCURSOR CDesgloseIEPSDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
+
+
+void CDesgloseIEPSDlg::OnBnClickedDesglosar()
+{
+	// TODO: Agregue aquí su código de controlador de notificación de control
+	CString litros;
+	CString importe;
+	CString flete;
+	CString iva;
+	CString retencion;
+
+	GetDlgItemText( IDC_EDIT1, importe );
+	GetDlgItemText( IDC_EDIT2, litros );
+	GetDlgItemText( IDC_EDIT3, flete );
+	GetDlgItemText( IDC_EDIT4, iva );
+	GetDlgItemText( IDC_EDIT5, retencion );
+
+	if ( importe.IsEmpty() || litros.IsEmpty() || flete.IsEmpty() || 
+		iva.IsEmpty() || retencion.IsEmpty() )
+	{
+		MessageBox( "Llene primero todos los datos!.", "Atencion", MB_ICONASTERISK );
+		GetDlgItem( IDC_EDIT1 )->SetFocus();
+
+		return;
+	}
+
+	Combust combust( atof( litros ), atof( importe ), atof( flete ),
+		atof( iva ), atof( retencion ) );
+
+	CString precioUnitario;
+	precioUnitario.Format( "%.*f", 4, combust.PrecioRealUnit() );
+
+	CString iepsCosto;
+	iepsCosto.Format( "%.*f", 4, combust.Ieps() );
+
+	CString total;
+	total.Format( "%.*f", 4, combust.Total() );
+
+	CString resultado = "Precio real unitario: $ " + precioUnitario +
+		"\nIEPS: $ " + iepsCosto +
+		"\nTOTAL: $ " + total;
+
+	SetDlgItemText( IDC_STATICRESULT, resultado );
+}
